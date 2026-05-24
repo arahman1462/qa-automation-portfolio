@@ -7,8 +7,8 @@ import { ApiClient } from "../utils/api-client";
  * Covers: GET (list + single), POST, PUT, DELETE, 404 handling,
  * successful login, and unauthorized login.
  *
- * Uses reqres.in as a stable public mock API so the suite runs
- * without any local backend setup.
+ * Uses the local mock API from tools/mock-api.js so the suite is
+ * deterministic in CI and does not depend on third-party uptime.
  */
 
 test.describe("Users API", () => {

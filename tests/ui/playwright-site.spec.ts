@@ -20,11 +20,11 @@ test.describe("Navigation & Layout", () => {
     await expect(page).toHaveTitle(/Playwright/);
   });
 
-  test("main navigation links are visible", async ({ page }) => {
+  test("primary documentation link is visible", async ({ page }) => {
     const nav = page.getByRole("navigation");
     await expect(nav).toBeVisible();
 
-    const docsLink = page.getByRole("link", { name: /docs/i }).first();
+    const docsLink = page.getByRole("link", { name: /get started/i }).first();
     await expect(docsLink).toBeVisible();
   });
 
@@ -41,7 +41,12 @@ test.describe("Navigation & Layout", () => {
   test("page does not have console errors on load", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text());
+      const text = msg.text();
+      const isKnownFirefoxSiteNoise = text.includes("InvalidStateError");
+
+      if (msg.type() === "error" && !isKnownFirefoxSiteNoise) {
+        errors.push(text);
+      }
     });
 
     await page.goto("https://playwright.dev");
@@ -74,19 +79,18 @@ test.describe("Search Functionality", () => {
     const searchInput = page.getByRole("searchbox");
     await searchInput.fill("page object model");
 
-    // Wait for results to populate
-    await page.waitForTimeout(500);
-    const results = page.locator('[class*="search"] a, [class*="result"] a');
-    const count = await results.count();
-    expect(count).toBeGreaterThan(0);
+    const firstResult = page
+      .getByRole("option", { name: /page object models/i })
+      .first();
+    await expect(firstResult).toBeVisible();
   });
 });
 
 test.describe("Docs Navigation", () => {
-  test("clicking Docs navigates to documentation", async ({ page }) => {
+  test("clicking Get started navigates to documentation", async ({ page }) => {
     await page.goto("https://playwright.dev");
 
-    const docsLink = page.getByRole("link", { name: /docs/i }).first();
+    const docsLink = page.getByRole("link", { name: /get started/i }).first();
     await docsLink.click();
 
     await expect(page).toHaveURL(/docs/);

@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: QA Automation Checks
 
 on:
   push:
@@ -6,17 +6,37 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Run full suite nightly at 2am UTC
     - cron: "0 2 * * *"
 
 jobs:
-  test:
-    name: Run Tests (${{ matrix.project }})
+  typecheck:
+    name: TypeScript
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+  test:
+    name: Playwright (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    needs: typecheck
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, firefox, webkit]
+        project: [api, chromium, firefox, webkit, mobile-chrome]
 
     steps:
       - name: Checkout repository
@@ -32,12 +52,11 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.project }}
+        if: matrix.project != 'api'
+        run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         run: npx playwright test --project=${{ matrix.project }}
-        env:
-          BASE_URL: ${{ secrets.BASE_URL || 'https://reqres.in' }}
 
       - name: Upload test report
         uses: actions/upload-artifact@v4

@@ -4,10 +4,12 @@
   "description": "QA automation framework built with Playwright — UI, API, and data validation test suites",
   "scripts": {
     "test": "playwright test",
-    "test:ui": "playwright test tests/ui",
-    "test:api": "playwright test tests/api",
+    "test:ui": "playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chrome",
+    "test:api": "playwright test --project=api",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
+    "typecheck": "tsc --noEmit",
+    "mock:api": "node tools/mock-api.js",
     "report": "playwright show-report reports/html"
   },
   "devDependencies": {

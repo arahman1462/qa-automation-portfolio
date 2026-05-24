@@ -5,8 +5,8 @@ import { ApiClient, User } from "../utils/api-client";
  * Data Integrity Test Suite
  *
  * Validates response payload structure, data types, field constraints,
- * and cross-field consistency — the same logic applied to API responses
- * as you'd apply in SQL validation pipelines.
+ * and cross-field consistency -- the same logic applied to API responses
+ * as you would apply in SQL validation pipelines.
  *
  * Demonstrates: schema validation, field-level assertions, boundary checks,
  * and data consistency across paginated responses.

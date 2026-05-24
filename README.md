@@ -1,92 +1,102 @@
 # QA Automation Portfolio
 
-A production-structured Playwright test framework demonstrating UI automation, API testing, and data integrity validation — the same patterns used in fintech SaaS environments across distributed microservices.
+Playwright + TypeScript test automation framework that demonstrates API contract testing, data integrity checks, and cross-browser UI regression coverage.
 
----
+This repo is built as a resume-ready sample: small enough to review quickly, but structured with the same habits used in production QA work: deterministic test data, typed helpers, CI gates, isolated projects, and actionable reports.
 
-## What's in here
+## Highlights
 
-| Suite | Location | What it covers |
-|---|---|---|
-| API — Users & Auth | `tests/api/users.spec.ts` | CRUD operations, auth flows, status codes, error handling |
-| API — Data Integrity | `tests/api/data-integrity.spec.ts` | Schema validation, pagination consistency, field-level assertions |
-| UI — Navigation & Layout | `tests/ui/playwright-site.spec.ts` | Navigation, search, responsive layout, accessibility, console errors |
+- API tests use Playwright's `APIRequestContext` through a typed client wrapper.
+- Local mock API keeps CI stable and avoids flaky third-party auth/rate-limit issues.
+- Data integrity suite validates schemas, pagination math, uniqueness, and cross-response consistency.
+- UI suite uses semantic locators for navigation, search, responsive layout, console errors, and accessibility signals.
+- GitHub Actions runs type checks plus separate API, desktop browser, and mobile browser projects.
 
----
+## Tech Stack
 
-## Stack
+| Area | Tooling |
+|---|---|
+| Test runner | Playwright Test |
+| Language | TypeScript |
+| API target | Local Node mock API |
+| UI target | `https://playwright.dev` |
+| Reporting | Playwright HTML report, traces, screenshots on failure |
+| CI | GitHub Actions |
 
-- **Framework:** Playwright (TypeScript)
-- **CI:** GitHub Actions — parallel matrix across Chromium, Firefox, WebKit
-- **Reporting:** Playwright HTML reporter
-- **Target:** [reqres.in](https://reqres.in) (API) · [playwright.dev](https://playwright.dev) (UI)
+## Project Structure
 
----
-
-## How to run
-
-```bash
-# Install
-npm install
-npx playwright install
-
-# Run all tests
-npm test
-
-# Run only API tests
-npm run test:api
-
-# Run only UI tests
-npm run test:ui
-
-# Run headed (watch the browser)
-npm run test:headed
-
-# Open HTML report after a run
-npm run report
-```
-
----
-
-## Project structure
-
-```
+```text
+.
+├── .github/workflows/playwright.yml
+├── docs/
+│   └── TEST_STRATEGY.md
 ├── tests/
 │   ├── api/
-│   │   ├── users.spec.ts          # CRUD + auth API tests
-│   │   └── data-integrity.spec.ts # Schema + consistency tests
+│   │   ├── data-integrity.spec.ts
+│   │   └── users.spec.ts
 │   ├── ui/
-│   │   └── playwright-site.spec.ts # UI regression suite
+│   │   └── playwright-site.spec.ts
 │   └── utils/
-│       └── api-client.ts          # Typed API wrapper (base client)
-├── fixtures/                      # Test data and shared fixtures
-├── reports/                       # Generated HTML reports (gitignored)
-├── playwright.config.ts           # Multi-browser config, parallelism, retries
-└── .github/workflows/playwright.yml # CI pipeline
+│       └── api-client.ts
+├── tools/
+│   └── mock-api.js
+├── playwright.config.ts
+├── package.json
+└── tsconfig.json
 ```
 
----
+## Getting Started
 
-## Design decisions
+```bash
+npm install
+npx playwright install
+npm test
+```
 
-**Typed API client** — `tests/utils/api-client.ts` wraps Playwright's `APIRequestContext` with typed methods and centralised status assertions. Individual test files focus on business logic, not HTTP boilerplate.
+Playwright starts the mock API automatically before tests run. To run it manually:
 
-**Data integrity layer** — the `data-integrity.spec.ts` suite validates response schema, field types, boundary conditions, and cross-page consistency. This mirrors the SQL validation work done on reporting pipelines: assert the shape and correctness of data, not just the status code.
+```bash
+npm run mock:api
+```
 
-**Parallel by default** — `fullyParallel: true` in config, with a GitHub Actions matrix running Chromium, Firefox, and WebKit concurrently. CI fails fast only in PR checks; nightly runs retry twice per test to surface flakiness.
+## Useful Commands
 
-**No magic selectors** — UI tests use `getByRole`, `getByText`, and semantic locators throughout. No `div > span:nth-child(3)` selectors that break on any layout change.
+| Command | Purpose |
+|---|---|
+| `npm test` | Run the full API and UI suite |
+| `npm run test:api` | Run API contract and data integrity tests |
+| `npm run test:ui` | Run browser UI tests across configured projects |
+| `npm run test:headed` | Run tests with visible browsers |
+| `npm run test:debug` | Open Playwright Inspector |
+| `npm run typecheck` | Validate TypeScript without emitting files |
+| `npm run report` | Open the latest HTML report |
 
----
+## Configuration
 
-## CI
+Defaults are ready to run locally. Optional environment variables are documented in `.env.example`.
 
-Every push to `main` or `develop` triggers the full suite across three browsers in parallel. Test reports are uploaded as artifacts and retained for 14 days.
+| Variable | Default | Purpose |
+|---|---|---|
+| `API_BASE_URL` | `http://127.0.0.1:4010` | Base URL for API tests |
+| `MOCK_API_PORT` | `4010` | Port used by the local mock API |
 
-Nightly scheduled run at 2am UTC catches environment drift and third-party regressions.
+## CI Pipeline
 
----
+The GitHub Actions workflow runs on pushes, pull requests, and a nightly schedule:
 
-## Background
+1. Install dependencies with `npm ci`.
+2. Run `npm run typecheck`.
+3. Run Playwright projects independently: `api`, `chromium`, `firefox`, `webkit`, and `mobile-chrome`.
+4. Upload the Playwright HTML report as a CI artifact.
 
-Built to demonstrate the framework design and test strategy patterns from 8 years of QA work across fintech SaaS platforms. The structure here reflects how I approach automation at scale: typed abstractions over raw API calls, data validation as a first-class concern, and CI integration from day one.
+## Test Strategy
+
+See [docs/TEST_STRATEGY.md](docs/TEST_STRATEGY.md) for scope, quality gates, and triage notes.
+
+## Resume Talking Points
+
+- Built a Playwright automation framework with separate API and browser projects.
+- Designed typed API helpers to reduce repeated request/assertion code.
+- Added deterministic mock services to make CI reliable and repeatable.
+- Covered data validation beyond happy-path status checks.
+- Configured GitHub Actions with parallel project execution and retained reports.
