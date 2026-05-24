@@ -146,6 +146,15 @@ const server = http.createServer(async (request, response) => {
   sendJson(response, 404, { error: "Not found" });
 });
 
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.log(`Mock API already running on http://127.0.0.1:${port}`);
+    process.exit(0);
+  }
+
+  throw error;
+});
+
 server.listen(port, "127.0.0.1", () => {
   console.log(`Mock API listening on http://127.0.0.1:${port}`);
 });

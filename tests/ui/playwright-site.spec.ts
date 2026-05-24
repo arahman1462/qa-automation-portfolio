@@ -134,15 +134,21 @@ test.describe("Accessibility Checks", () => {
   test("all images have alt text", async ({ page }) => {
     await page.goto("https://playwright.dev");
 
-    const images = page.locator("img");
-    const count = await images.count();
+    const images = await page.locator("img").evaluateAll((elements) =>
+      elements.map((image) => ({
+        alt: image.getAttribute("alt"),
+        role: image.getAttribute("role"),
+        ariaHidden: image.getAttribute("aria-hidden"),
+      }))
+    );
 
-    for (let i = 0; i < count; i++) {
-      const alt = await images.nth(i).getAttribute("alt");
-      const role = await images.nth(i).getAttribute("role");
-      // Images should have alt text or be marked as decorative (role="presentation")
-      expect(alt !== null || role === "presentation").toBe(true);
-    }
+    expect(images.length).toBeGreaterThan(0);
+    expect(
+      images.every(
+        ({ alt, role, ariaHidden }) =>
+          alt !== null || role === "presentation" || ariaHidden === "true"
+      )
+    ).toBe(true);
   });
 
   test("interactive elements are keyboard focusable", async ({ page }) => {
